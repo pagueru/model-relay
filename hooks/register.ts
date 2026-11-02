@@ -167,6 +167,17 @@ async function configDir($: EngineInterface): Promise<string> {
   return (dir || `${home}/.claude`).replace(/\\/g, '/')
 }
 
+// fork pagueru: a pasta desta sessão e, se o model-relay.json for link simbólico, a pasta da config para onde ele
+// aponta; assim duas contas (CLAUDE_CONFIG_DIR diferentes) com a mesma config dividem um roteador
+async function myConfigDirs($: EngineInterface): Promise<string[]> {
+  const dir = await configDir($)
+  try {
+    const real = (await $.fs.stat(`${dir}/${CONFIG_NAME}`, { resolve: true }))?.realPath
+    if (real) return [dir, real.replace(/\\/g, '/').replace(/\/[^/]*$/, '')]
+  } catch {}
+  return [dir]
+}
+
 async function readLocal($: EngineInterface): Promise<LocalCfg | null> {
   const base = await configDir($)
   const read = async (name: string) => JSON.parse(await $.fs.read(`${base}/${name}`)) as unknown
@@ -350,7 +361,7 @@ async function tick($: EngineInterface): Promise<void> {
     const lang = await detectLang($)
     const seen = await health($, cfg)
     // Another config dir's router on our port is not ours: never route through it, same as a router that is down
-    const other = foreignConfigDir(seen, await configDir($), await isWindows($))
+    const other = foreignConfigDir(seen, await myConfigDirs($), await isWindows($))
     if (other) {
       if (!direct && (await $.env.get('ANTHROPIC_BASE_URL')) === routerUrl(cfg)) {
         direct = true

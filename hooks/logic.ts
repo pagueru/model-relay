@@ -316,13 +316,15 @@ export function buildPanelData(h: Health | null, port: number, direct: boolean, 
 
 // The directory of a router that answers on our port but serves a different config dir; null when it is ours.
 // A router that reports no directory is an older relay and still counts as ours.
-export function foreignConfigDir(h: Health | null, myDir: string, isWin = true): string | null {
+// fork pagueru: `myDir` aceita lista, para incluir a pasta para onde o link simbólico do model-relay.json aponta
+export function foreignConfigDir(h: Health | null, myDir: string | readonly string[], isWin = true): string | null {
   if (!h || !h.configDirs || h.configDirs.length === 0) return null
   const key = (d: string) => {
     const s = d.replace(/\\/g, '/').replace(/\/+$/, '')
     return isWin ? s.toLowerCase() : s
   }
-  return h.configDirs.some((d) => key(d) === key(myDir)) ? null : h.configDirs[0]!
+  const mine = (typeof myDir === 'string' ? [myDir] : myDir).map(key)
+  return h.configDirs.some((d) => mine.includes(key(d))) ? null : h.configDirs[0]!
 }
 
 // -1, 0 or 1 for dotted numeric versions; a missing part counts as 0

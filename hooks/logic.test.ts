@@ -264,6 +264,9 @@ test('a router serving another config dir is not ours; one that reports no dir i
   assert(foreignConfigDir(parseHealth('{"ok":true,"configDir":"C:/Users/x/.claude"}'), 'c:/users/x/.claude', true) === null, 'Windows ignores case')
   assert(foreignConfigDir(parseHealth('{"ok":true}'), '/any', false) === null, 'older relay without configDir stays ours')
   assert(foreignConfigDir(null, '/any', false) === null, 'no answer is not foreign')
+  // fork pagueru: outra pasta de config cujo model-relay.json é link para a config do roteador conta como nossa
+  assert(foreignConfigDir(mine, ['/other/.claude', '/real/.claude'], false) === null, 'a config linked to the router dir is ours')
+  assert(foreignConfigDir(mine, ['/other/.claude', '/third/.claude'], false) === '/real/.claude', 'no matching dir is still foreign')
   assert(foreignStatusText('/other/.claude', 'en').includes('/other/.claude'), 'the status names the other dir')
 })
 
