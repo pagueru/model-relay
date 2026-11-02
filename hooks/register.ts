@@ -136,7 +136,10 @@ async function syncProviders($: EngineInterface, providers: Record<string, strin
   }
   await $.command.register({
     name: 'provider',
-    description: '切換這個視窗的模型（不帶參數開面板，/provider help 看全部指令）',
+    // fork pagueru: descrição pelo idioma escolhido (no upstream é fixa em chinês)
+    description: (await detectLang($)) === 'en'
+      ? "Switch this window's model (no argument opens the panel; /provider help lists every command)"
+      : '切換這個視窗的模型（不帶參數開面板，/provider help 看全部指令）',
     argumentHint: `[${[...Object.keys(providers), ...COMMAND_WORDS].join('|')}]`,
   })
   registeredSig = sig
@@ -707,5 +710,6 @@ export const register: Register = (on) => {
         ? `No provider or command "${arg}". Switch with /provider <${names}>; all commands: /provider help`
         : `沒有「${arg}」這個供應商或指令。切換用 /provider <${names}>；所有指令：/provider help`,
     }
-  }).catch(() => ({ text: '/provider 執行失敗，設定未變更。' }))
+  // fork pagueru: erro em inglês (no upstream é fixo em chinês; aqui o idioma não está à mão)
+  }).catch(() => ({ text: '/provider failed; settings unchanged.' }))
 }
