@@ -155,7 +155,7 @@ async function detectLang($: EngineInterface): Promise<'zh' | 'en'> {
     if (/zh|繁體|中文|traditional/i.test(lang)) return 'zh'
     if (/en|english/i.test(lang)) return 'en'
   } catch {}
-  return 'zh'
+  return 'en' // fork pagueru: idioma desconhecido cai no inglês (upstream cai no chinês)
 }
 
 async function configDir($: EngineInterface): Promise<string> {
